@@ -29,9 +29,23 @@ module.exports = function (app) {
 
     //app.post
     app.post("/api/notes", function (req, res) {
-        let newNote = req.body;
+        if (notesData.length == 0){
+            req.body.id = "0";
+        } else{
+            req.body.id = JSON.stringify(JSON.parse(notesData[notesData.length - 1].id) + 1);
+        }
+        
+        console.log("req.body.id: " + req.body.id);
 
-        console.log(newNote);
+        // Pushes Body to JSON Array
+        notesData.push(req.body);
+
+        // Write notes data to database
+        writeToDB(notesData);
+        console.log(notesData);
+
+        // returns new note in JSON format.
+        res.json(req.body);
     });
 
     //app.delete
