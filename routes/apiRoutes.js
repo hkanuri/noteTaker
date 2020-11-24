@@ -1,40 +1,29 @@
 const fs = require("fs");
-const app = require("express");
-const dbJSON = require("../db/db.json");
+var data = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
 
-module.exports = function (app) {
 
-    // write to DB fucntion
-    // function updateDB(notes) {
-    //     notes = JSON.stringify(notes);
-    //     console.log(notes);
+module.exports = function(app) {
 
-    //     // write data back to DB
-    //     fs.writeFileSync("../db/db.json", notes, function (err) {
-    //         if (err) {
-    //             return console.log(err)
-    //         }
-    //     });
-    // }
-    //app.get
-    app.get("/api/notes", function (req, res) {
+    app.get("/api/notes", function(req, res) {
+       
+        res.json(data);
 
-        fs.readFile("../db/db.json", "utf8", (err, data) => {
-            console.log(data);
-            res.json(data);
-        });
+    });
+
+    app.get("/api/notes/:id", function(req, res) {
+
+        res.json(data[Number(req.params.id)]);
+
     });
 
 
-
-    //app.post
     app.post("/api/notes", function(req, res) {
 
-        let newNote = req.body;
+        let Note1 = req.body;
         let uniqueId = (data.length).toString();
         console.log(uniqueId);
-        newNote.id = uniqueId;
-        data.push(newNote);
+        Note1.id = uniqueId;
+        data.push(Note1);
         
         fs.writeFileSync("./db/db.json", JSON.stringify(data), function(err) {
             if (err) throw (err);        
@@ -44,10 +33,21 @@ module.exports = function (app) {
 
     });
 
-    //app.delete
+    
+    app.delete("/api/notes/:id", function(req, res) {
 
-    app.delete("/api/notes", function (req, res) {
-        const id = req.params.id;
-        let newID =0;
-    })
-};
+        let noteId = req.params.id;
+        let newId = 0;
+        console.log(`Deleting note with id ${noteId}`);
+        data = data.filter(currentNote => {
+           return currentNote.id != noteId;
+        });
+        for (currentNote of data) {
+            currentNote.id = newId.toString();
+            newId++;
+        }
+        fs.writeFileSync("./db/db.json", JSON.stringify(data));
+        res.json(data);
+    }); 
+
+}
